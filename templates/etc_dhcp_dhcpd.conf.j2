@@ -5,6 +5,15 @@
 #
 # Global options
 #
+{% if dhcp_global_ddns_update_style is defined %}
+ddns-update-style {{ dhcp_global_ddns_update_style }};
+{% endif %}
+{% if dhcp_global_client_updates is defined %}
+{{ dhcp_global_client_updates }} client-updates;
+{% endif %}
+{% if dhcp_global_update_optimization is defined %}
+update-optimization {{ dhcp_global_update_optimization }};
+{% endif %}
 {% if dhcp_global_omapi_port is defined %}
 omapi-port {{ dhcp_global_omapi_port }};
 {% endif %}
@@ -82,8 +91,11 @@ option {{ option }};
 #
 # Includes
 #
-{% for include in dhcp_global_includes %}
+{% for include in dhcp_install_includes %}
 include "{{ dhcp_config_dir }}/{{ include | basename }}";
+{% endfor %}
+{% for include in dhcp_global_includes %}
+include "{{ include }}";
 {% endfor %}
 {% endif %}
 
@@ -147,6 +159,14 @@ subnet {{ subnet.ip }} netmask {{ subnet.netmask }} {
 {% endif %}
 {% if subnet.booting is defined %}
 {{ subnet.booting }} booting;
+{% endif %}
+{% if subnet.zones is defined %}
+{% for zone in subnet.zones %}
+  zone {{ zone.name }} {
+    primary {{ zone.primary }};
+    key {{ zone.key }};
+  }
+{% endfor %}
 {% endif %}
 {% if subnet.hosts is defined %}
 {% for host in subnet.hosts %}
